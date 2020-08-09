@@ -50,7 +50,7 @@ class MviViewModel : ViewModel() {
                 }
 
                 override fun onResponse(call: Call<Employee>, response: Response<Employee>) {
-                    val newStateData = currentStateData add  response.body()?.data?.employee_name
+                    val  newStateData = currentStateData convertResponse response.body()?.data?.employee_name
                     update(MviState.Content(newStateData))
                 }
             })
@@ -72,7 +72,7 @@ class MviViewModel : ViewModel() {
      * Note: This utilizes the copy function, which creates a new immutable data class from the old one. It helps
      * significantly when the state data grows complex
      */
-    private infix fun MviStateData.add(employeeName: String?): MviStateData {
+    private infix fun MviStateData.convertResponse(employeeName: String?): MviStateData {
         return copy(employeeName = (employeeName!!))
     }
 
