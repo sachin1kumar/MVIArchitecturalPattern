@@ -29,16 +29,16 @@ class MviViewModel : ViewModel() {
      */
     fun takeAction(action: MviAction) {
         when (action) {
-            is MviAction.GetData -> handleAddValueAction(action.id)
+            is MviAction.GetData -> handleAction(action.id)
         }
     }
 
     /**
-     * Handle the action of adding a value to the current state.
+     * Handle the action.
      *
      * Note: This should cover all outcomes, error or not
      */
-    private fun handleAddValueAction(id: Int) {
+    private fun handleAction(id: Int) {
         //to show loading.
         update(MviState.Loading)
 
