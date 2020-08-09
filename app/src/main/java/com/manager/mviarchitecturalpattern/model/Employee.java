@@ -8,18 +8,26 @@ import com.google.gson.annotations.SerializedName;
 public class Employee implements Parcelable {
 
     @SerializedName("data")
-    private Data[] data;
+    private Data data;
 
     @SerializedName("status")
     private String status;
 
+    @SerializedName("message")
+    private String message;
+
+
     protected Employee(Parcel in) {
+        data = in.readParcelable(Data.class.getClassLoader());
         status = in.readString();
+        message = in.readString();
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeParcelable(data, flags);
         dest.writeString(status);
+        dest.writeString(message);
     }
 
     @Override
@@ -39,11 +47,11 @@ public class Employee implements Parcelable {
         }
     };
 
-    public Data[] getData() {
+    public Data getData() {
         return data;
     }
 
-    public void setData(Data[] data) {
+    public void setData(Data data) {
         this.data = data;
     }
 
@@ -58,5 +66,13 @@ public class Employee implements Parcelable {
     @Override
     public String toString() {
         return "ClassPojo [data = " + data + ", status = " + status + "]";
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

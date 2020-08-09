@@ -11,7 +11,7 @@ package com.manager.mviarchitecturalpattern.mvicomponents
 class MviActor(private val emit: (MviAction) -> Unit) {
 
     /**
-     * The user clicked the add button intending to add [addValue] to the current value in the state
+     * The user clicked the add button intending to get data from backend/model to the current value in the state
      */
-    fun addClicked(addValue: String) = emit(MviAction.AddValue(addValue))
+    fun addClicked(id: Int) = emit(MviAction.GetData(id))
 }

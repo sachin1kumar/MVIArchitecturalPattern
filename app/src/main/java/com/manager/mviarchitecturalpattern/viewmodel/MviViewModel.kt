@@ -3,29 +3,33 @@ package com.manager.mviarchitecturalpattern.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.hadilq.liveevent.LiveEvent
+import com.manager.mviarchitecturalpattern.model.Employee
+import com.manager.mviarchitecturalpattern.mvicomponents.MviAction
+import com.manager.mviarchitecturalpattern.mvicomponents.MviState
+import com.manager.mviarchitecturalpattern.mvicomponents.MviStateData
+import com.manager.retrofitesting.model.api.ApiHelperImpl
+import com.manager.retrofitesting.model.api.RetrofitBuilder
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 /**
  * [ViewModel] for the [MviActivity].
  */
 class MviViewModel : ViewModel() {
     // keep this private so that only the ViewModel can modify the state
-    private val _state = MutableLiveData<MviState>()
+    private val state = MutableLiveData<MviState>()
         .apply { value = MviState.Content(MviStateData()) }
 
     // Create a publicly accessible LiveData object that can be observed
-    val state: LiveData<MviState> = _state
-
-    // Note same as above, except this is an Effect to be consumed by the view only once
-    private val _effect = LiveEvent<MviState.Effect>()
-    val effect: LiveData<MviState.Effect> = _effect
+    val _state: LiveData<MviState> = state
 
     /**
      * Take an [MviAction] and process it
      */
     fun takeAction(action: MviAction) {
         when (action) {
-            is MviAction.AddValue -> handleAddValueAction(action.value)
+            is MviAction.GetData -> handleAddValueAction(action.id)
         }
     }
 
@@ -34,26 +38,30 @@ class MviViewModel : ViewModel() {
      *
      * Note: This should cover all outcomes, error or not
      */
-    private fun handleAddValueAction(addValue: String?) {
-        val newState: MviState = when (val processValue = addValue?.toIntOrNull()) {
-            null -> MviState.InvalidNumberError
-            else -> {
-                val newStateData = currentStateData add processValue
-                MviState.Content(newStateData)
-            }
-        }
+    private fun handleAddValueAction(id: Int) {
+        //to show loading.
+        update(MviState.Loading)
 
-        update(newState)
+        val apiHelper = ApiHelperImpl(RetrofitBuilder.apiInterface)
+        apiHelper.getEmployeeDetails(id)
+            .enqueue(object : Callback<Employee> {
+                override fun onFailure(call: Call<Employee>, t: Throwable) {
+                    update(MviState.InvalidNumberError)
+                }
+
+                override fun onResponse(call: Call<Employee>, response: Response<Employee>) {
+                    val newStateData = currentStateData add  response.body()?.data?.employee_name
+                    update(MviState.Content(newStateData))
+                }
+            })
+
     }
 
-    /**
-     * A simple router to simplify the logic of determining whether to update the [_effect] or [_state]
-     */
     private fun update(newState: MviState) {
         when (newState) {
-            is MviState.Effect -> _effect.postValue(newState)
-            is MviState.Loading,
-            is MviState.Content -> _state.postValue(newState)
+            is MviState.Effect -> state.postValue(newState)
+            is MviState.Loading -> state.postValue(newState)
+            is MviState.Content -> state.postValue(newState)
         }
     }
 
@@ -64,9 +72,8 @@ class MviViewModel : ViewModel() {
      * Note: This utilizes the copy function, which creates a new immutable data class from the old one. It helps
      * significantly when the state data grows complex
      */
-    private infix fun MviStateData.add(num: Int): MviStateData {
-        val currentNumber = currentValue.toIntOrNull() ?: 0
-        return copy(currentValue = (currentNumber + num).toString())
+    private infix fun MviStateData.add(employeeName: String?): MviStateData {
+        return copy(employeeName = (employeeName!!))
     }
 
     /**
@@ -74,7 +81,7 @@ class MviViewModel : ViewModel() {
      */
     private val currentStateData: MviStateData
         get() {
-            val data = _state.value?.let {
+            val data = state.value?.let {
                 return if (it is MviState.Content) {
                     it.stateData
                 } else {

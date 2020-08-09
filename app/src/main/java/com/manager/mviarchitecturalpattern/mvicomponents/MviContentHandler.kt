@@ -1,6 +1,6 @@
 package com.manager.mviarchitecturalpattern.mvicomponents
 
-import me.danlowe.simplemvi.databinding.ActivityMainBinding
+import com.manager.mviarchitecturalpattern.databinding.ActivityMainBinding
 
 /**
  * A class to handle content state updates.
@@ -11,6 +11,5 @@ import me.danlowe.simplemvi.databinding.ActivityMainBinding
 class MviContentHandler(private val binding: ActivityMainBinding) {
     fun handleContent(content: MviState.Content) {
         binding.state = content.stateData
-        binding.notifyPropertyChanged(BR.state)
     }
 }
