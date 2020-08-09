@@ -59,8 +59,8 @@ class MviViewModel : ViewModel() {
 
     private fun update(newState: MviState) {
         when (newState) {
-            is MviState.Effect -> state.postValue(newState)
-            is MviState.Loading -> state.postValue(newState)
+            is MviState.Effect,
+            is MviState.Loading,
             is MviState.Content -> state.postValue(newState)
         }
     }
